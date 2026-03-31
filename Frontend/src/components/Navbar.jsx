@@ -12,7 +12,7 @@ export default function Navbar({ darkMode, setDarkMode }) {
       </div>
 
       {/* CENTER - NAV LINKS */}
-      <div className="hidden md:flex gap-6 text-sm font-medium opacity-80">
+      <div className="flex gap-4 text-xs sm:text-sm md:text-base">
         <Link to="/" className="hover:text-blue-400 transition">
           Dashboard
         </Link>
@@ -20,6 +20,15 @@ export default function Navbar({ darkMode, setDarkMode }) {
         <Link to="/logs" className="hover:text-blue-400 transition">
           Logs
         </Link>
+
+        <Link to="/about" className="hover:text-blue-400 transition">
+          About
+        </Link>
+
+       <Link to="/contact" className="hover:text-blue-400 transition">
+          Contact Us
+        </Link>
+
       </div>
 
       {/* RIGHT - CONTROLS */}
