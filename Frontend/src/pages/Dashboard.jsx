@@ -33,9 +33,7 @@ export default function Dashboard() {
   useEffect(() => {
 
     const fetchData = async () => {
-
       try {
-
         const sensor = await getLatestSensor();
         const system = await getSystemState();
         const trends = await getTrends();
@@ -55,8 +53,8 @@ export default function Dashboard() {
           }
         });
 
-        setGasHistory(trends.map(t => t.gas));
-        setTempHistory(trends.map(t => t.temperature));
+        setGasHistory(trends?.map(t => t.gas) || []);
+        setTempHistory(trends?.map(t => t.temperature) || []);
 
       } catch (err) {
         console.error(err);
@@ -64,14 +62,12 @@ export default function Dashboard() {
     };
 
     fetchData();
-
     const interval = setInterval(fetchData, 2000);
-
     return () => clearInterval(interval);
 
   }, []);
 
-  if (!systemData) return <div className="p-10">Loading...</div>;
+  if (!systemData) return <div className="p-6 text-center">Loading...</div>;
 
   const isGasDanger = systemData.gas > 500;
   const isTempDanger = systemData.temperature > 40;
@@ -89,18 +85,18 @@ export default function Dashboard() {
     : "bg-gradient-to-br from-slate-100 to-blue-200 text-gray-900";
 
   return (
-    <div className={`min-h-screen p-10 transition-all duration-500 ${bgClass}`}>
+    <div className={`min-h-screen px-4 sm:px-6 lg:px-10 py-6 transition-all ${bgClass}`}>
 
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
 
-        <h1 className="text-4xl font-bold">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
           Smart Exhaust Digital Twin
         </h1>
 
         <button
           onClick={() => setDarkMode(!darkMode)}
-          className="px-4 py-2 rounded-lg bg-gray-700 text-white"
+          className="px-4 py-2 rounded-lg bg-gray-700 text-white text-sm sm:text-base"
         >
           {darkMode ? "Light Mode" : "Dark Mode"}
         </button>
@@ -108,30 +104,30 @@ export default function Dashboard() {
       </div>
 
       {/* SAFETY BANNER */}
-      <div className={`${bannerColor} text-white p-4 rounded-xl mb-10 text-center text-lg font-semibold`}>
+      <div className={`${bannerColor} text-white p-3 sm:p-4 rounded-xl mb-8 text-center text-sm sm:text-lg font-semibold`}>
         System Status: {systemData.systemHealth}
       </div>
 
       {/* TOP CARDS */}
-      <div className="grid md:grid-cols-3 gap-8 mb-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
 
         <Card danger={isGasDanger} darkMode={darkMode}>
-          <h2 className="text-sm opacity-70">Gas Level</h2>
-          <p className="text-4xl font-bold mt-3">
+          <h2 className="text-xs sm:text-sm opacity-70">Gas Level</h2>
+          <p className="text-2xl sm:text-3xl font-bold mt-2">
             {systemData.gas} ppm
           </p>
         </Card>
 
         <Card danger={isTempDanger} darkMode={darkMode}>
-          <h2 className="text-sm opacity-70">Room Temperature</h2>
-          <p className="text-4xl font-bold mt-3">
+          <h2 className="text-xs sm:text-sm opacity-70">Room Temperature</h2>
+          <p className="text-2xl sm:text-3xl font-bold mt-2">
             {systemData.temperature} °C
           </p>
         </Card>
 
         <Card darkMode={darkMode}>
-          <h2 className="text-sm opacity-70">Ventilation Score</h2>
-          <p className="text-4xl font-bold text-blue-500 mt-3">
+          <h2 className="text-xs sm:text-sm opacity-70">Ventilation Score</h2>
+          <p className="text-2xl sm:text-3xl font-bold text-blue-500 mt-2">
             {systemData.ventilationScore} %
           </p>
         </Card>
@@ -139,80 +135,69 @@ export default function Dashboard() {
       </div>
 
       {/* SECOND ROW */}
-      <div className="grid md:grid-cols-3 gap-8 mb-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
 
         <Card darkMode={darkMode}>
           <h2 className="text-sm opacity-70 mb-2">Fan State</h2>
 
-          <div className="flex items-center gap-4">
-
+          <div className="flex items-center gap-3">
             <FanIcon
               isOn={systemData.fanState === "ON"}
               darkMode={darkMode}
             />
-
-            <span className="text-lg font-semibold">
+            <span className="text-base sm:text-lg font-semibold">
               {systemData.fanState}
             </span>
-
           </div>
         </Card>
 
         <Card darkMode={darkMode}>
           <h2 className="text-sm opacity-70 mb-2">Maintenance</h2>
-
-          <p>Fan: {systemData.maintenance.fan}</p>
-          <p>Gas Sensor: {systemData.maintenance.gasSensor}</p>
-          <p>Temp Sensor: {systemData.maintenance.tempSensor}</p>
-
+          <p className="text-sm">Fan: {systemData.maintenance.fan}</p>
+          <p className="text-sm">Gas: {systemData.maintenance.gasSensor}</p>
+          <p className="text-sm">Temp: {systemData.maintenance.tempSensor}</p>
         </Card>
 
         <Card danger={isFailure} darkMode={darkMode}>
           <h2 className="text-sm opacity-70 mb-2">System Health</h2>
-
-          <p className="font-semibold">
+          <p className="font-semibold text-sm sm:text-base">
             {systemData.systemHealth}
           </p>
-
         </Card>
 
       </div>
 
       {/* CHARTS */}
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         <ChartCard title="Gas Trend" darkMode={darkMode}>
-
           <Line
             data={{
               labels: gasHistory.map((_, i) => i),
               datasets: [{
                 data: gasHistory,
                 borderColor: "#ef4444",
-                borderWidth: 3,
+                borderWidth: 2,
                 tension: 0.4
               }]
             }}
             options={chartOptions(darkMode)}
           />
-
         </ChartCard>
 
         <ChartCard title="Temperature Trend" darkMode={darkMode}>
-
           <Line
             data={{
               labels: tempHistory.map((_, i) => i),
               datasets: [{
                 data: tempHistory,
                 borderColor: "#3b82f6",
-                borderWidth: 3,
+                borderWidth: 2,
                 tension: 0.4
               }]
             }}
             options={chartOptions(darkMode)}
           />
-
         </ChartCard>
 
       </div>
@@ -221,6 +206,7 @@ export default function Dashboard() {
   );
 }
 
+/* CARD */
 function Card({ children, danger, darkMode }) {
 
   const base = darkMode
@@ -229,7 +215,7 @@ function Card({ children, danger, darkMode }) {
 
   return (
     <div
-      className={`${base} rounded-2xl shadow-lg p-6 transition-all duration-300 ${
+      className={`${base} rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg p-4 sm:p-6 transition ${
         danger ? "border-2 border-red-500 bg-red-100 animate-pulse text-black" : ""
       }`}
     >
@@ -238,6 +224,7 @@ function Card({ children, danger, darkMode }) {
   );
 }
 
+/* CHART CARD */
 function ChartCard({ title, children, darkMode }) {
 
   const base = darkMode
@@ -245,15 +232,14 @@ function ChartCard({ title, children, darkMode }) {
     : "bg-white text-gray-900";
 
   return (
-    <div className={`${base} rounded-2xl shadow-lg p-6`}>
-      <h3 className="text-sm mb-4 opacity-70">{title}</h3>
+    <div className={`${base} rounded-xl shadow-md p-4 sm:p-6`}>
+      <h3 className="text-xs sm:text-sm mb-3 opacity-70">{title}</h3>
       {children}
     </div>
   );
 }
 
 function chartOptions(darkMode) {
-
   return {
     responsive: true,
     plugins: { legend: { display: false } },

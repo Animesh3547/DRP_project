@@ -20,7 +20,8 @@ export function startSensorSimulation() {
       gas: Math.round(gas),
       temperature: Math.round(temp),
       current,
-      rpm
+      rpm,
+      vibration
     });
 
     await log.save();

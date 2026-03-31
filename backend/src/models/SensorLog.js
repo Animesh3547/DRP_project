@@ -10,6 +10,10 @@ const sensorLogSchema = new mongoose.Schema(
       type: Number,
       required: true
     },
+    vibration: {
+      type: Number,
+      required: true
+    },
     current: {
       type: Number,
       required: true
