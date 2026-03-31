@@ -1,56 +1,106 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import {
+  Menu,
+  X,
+  LayoutDashboard,
+  FileText,
+  Info,
+  Mail,
+  Sun,
+  Moon
+} from "lucide-react";
 
 export default function Navbar({ darkMode, setDarkMode }) {
+
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const links = [
+    { to: "/", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
+    { to: "/logs", label: "Logs", icon: <FileText size={18} /> },
+    { to: "/about", label: "About", icon: <Info size={18} /> },
+    { to: "/contact", label: "Contact", icon: <Mail size={18} /> },
+  ];
+
   return (
     <nav className="w-full px-4 sm:px-6 lg:px-10 py-4 mb-6 
-    flex items-center justify-between 
     backdrop-blur bg-white/10 border-b border-white/10 shadow-sm">
 
-      {/* LEFT - LOGO */}
-      <div className="text-lg sm:text-xl font-bold tracking-wide">
-        Smart Exhaust
-      </div>
+      <div className="flex items-center justify-between">
 
-      {/* CENTER - NAV LINKS */}
-      <div className="flex gap-4 text-xs sm:text-sm md:text-base">
-        <Link to="/" className="hover:text-blue-400 transition">
-          Dashboard
-        </Link>
-
-        <Link to="/logs" className="hover:text-blue-400 transition">
-          Logs
-        </Link>
-
-        <Link to="/about" className="hover:text-blue-400 transition">
-          About
-        </Link>
-
-       <Link to="/contact" className="hover:text-blue-400 transition">
-          Contact Us
-        </Link>
-
-      </div>
-
-      {/* RIGHT - CONTROLS */}
-      <div className="flex items-center gap-3">
-
-        {/* STATUS DOT */}
-        <div className="hidden sm:flex items-center gap-2 text-sm opacity-70">
-          <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-          Live
+        {/* LOGO */}
+        <div className="text-lg sm:text-xl font-bold">
+          Smart Exhaust
         </div>
 
-        {/* DARK MODE */}
-        <button
-          onClick={() => setDarkMode(!darkMode)}
-          className="px-3 py-1.5 text-sm rounded-lg 
-          bg-white/10 border border-white/20 
-          hover:bg-white/20 transition"
-        >
-          {darkMode ? "Light" : "Dark"}
-        </button>
+        {/* DESKTOP */}
+        <div className="hidden md:flex gap-6 items-center text-sm font-medium">
+
+          {links.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              className="flex items-center gap-2 hover:text-blue-400 transition"
+            >
+              {link.icon}
+              {link.label}
+            </Link>
+          ))}
+
+          {/* DARK MODE */}
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="ml-2 p-2 rounded-lg bg-white/10 border border-white/20 hover:bg-white/20"
+          >
+            {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+
+        </div>
+
+        {/* MOBILE CONTROLS */}
+        <div className="flex items-center gap-3 md:hidden">
+
+          <button
+            onClick={() => setDarkMode(!darkMode)}
+            className="p-2 rounded bg-white/10 border border-white/20"
+          >
+            {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="p-2"
+          >
+            {menuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+
+        </div>
 
       </div>
+
+      {/* MOBILE MENU (ANIMATED) */}
+      <div
+        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+          menuOpen ? "max-h-60 opacity-100 mt-4" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="flex flex-col gap-4 text-sm font-medium">
+
+          {links.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-3 px-2 py-2 rounded hover:bg-white/10 transition"
+            >
+              {link.icon}
+              {link.label}
+            </Link>
+          ))}
+
+        </div>
+      </div>
+
     </nav>
   );
 }
