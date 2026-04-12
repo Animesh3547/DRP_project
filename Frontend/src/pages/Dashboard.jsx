@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import FanIcon from "../components/FanIcon";
 import { getLatestSensor, getSystemState, getTrends } from "../services/api";
+import {
+  fallbackSensor,
+  fallbackSystem,
+  fallbackTrends
+} from "../data/fallback";
 
 import {
   Chart as ChartJS,
@@ -28,37 +33,55 @@ export default function Dashboard() {
   const [systemData, setSystemData] = useState(null);
   const [gasHistory, setGasHistory] = useState([]);
   const [tempHistory, setTempHistory] = useState([]);
+  const [isFallback, setIsFallback] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(false);
 
   useEffect(() => {
 
     const fetchData = async () => {
-      try {
-        const sensor = await getLatestSensor();
-        const system = await getSystemState();
-        const trends = await getTrends();
+  try {
+    const sensor = await getLatestSensor();
+    const system = await getSystemState();
+    const trends = await getTrends();
+     setIsFallback(false);
+     setLastUpdated(new Date());
 
-        setSystemData({
-          gas: sensor?.gas || 0,
-          temperature: sensor?.temperature || 0,
-          rpm: sensor?.rpm || 0,
-          current: sensor?.current || 0,
-          fanState: system?.system?.fanState || "OFF",
-          ventilationScore: system?.system?.ventilationScore || 0,
-          systemHealth: system?.system?.systemHealth || "Unknown",
-          maintenance: system?.system?.maintenance || {
-            fan: "-",
-            gasSensor: "-",
-            tempSensor: "-"
-          }
-        });
+    setSystemData({
+      gas: sensor?.gas || 0,
+      temperature: sensor?.temperature || 0,
+      rpm: sensor?.rpm || 0,
+      current: sensor?.current || 0,
+      fanState: system?.system?.fanState || "OFF",
+      ventilationScore: system?.system?.ventilationScore || 0,
+      systemHealth: system?.system?.systemHealth || "Unknown",
+      maintenance: system?.system?.maintenance || {}
+    });
 
-        setGasHistory(trends?.map(t => t.gas) || []);
-        setTempHistory(trends?.map(t => t.temperature) || []);
+    setGasHistory(trends.map(t => t.gas));
+    setTempHistory(trends.map(t => t.temperature));
 
-      } catch (err) {
-        console.error(err);
-      }
-    };
+  } catch (err) {
+      setIsFallback(true);
+       setLastUpdated(new Date());
+
+    console.log(" Backend not reachable → using fallback");
+
+    //  USE FALLBACK
+    setSystemData({
+      gas: fallbackSensor.gas,
+      temperature: fallbackSensor.temperature,
+      rpm: fallbackSensor.rpm,
+      current: fallbackSensor.current,
+      fanState: fallbackSystem.system.fanState,
+      ventilationScore: fallbackSystem.system.ventilationScore,
+      systemHealth: fallbackSystem.system.systemHealth,
+      maintenance: fallbackSystem.system.maintenance
+    });
+
+    setGasHistory(fallbackTrends.map(t => t.gas));
+    setTempHistory(fallbackTrends.map(t => t.temperature));
+  }
+};
 
     fetchData();
     const interval = setInterval(fetchData, 2000);
@@ -66,7 +89,16 @@ export default function Dashboard() {
 
   }, []);
 
-  if (!systemData) return <div className="p-6 text-center">Loading...</div>;
+  if (!systemData) {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center space-y-2">
+        <p className="text-lg font-semibold">Initializing System...</p>
+        <p className="text-sm opacity-60">Connecting to sensors</p>
+      </div>
+    </div>
+  );
+}
 
   const isGasDanger = systemData.gas > 500;
   const isTempDanger = systemData.temperature > 40;
@@ -87,6 +119,16 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {isFallback && (
+  <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-400/30 text-yellow-400 text-sm">
+     Running in Demo Mode (Backend Offline)
+  </div>
+)}
+      {lastUpdated && (
+  <p className="text-xs opacity-60 mb-4">
+    Last updated: {lastUpdated.toLocaleTimeString()}
+  </p>
+)}
       {/* STATUS BAR */}
       <div className="mb-8 p-4 rounded-xl bg-white/10 backdrop-blur border border-white/10 flex justify-between items-center">
         <span className="text-sm opacity-70">System Status</span>
